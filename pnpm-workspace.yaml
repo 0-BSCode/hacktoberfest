@@ -1,0 +1,10 @@
+allowBuilds:
+  '@google/genai': true
+  esbuild: true
+  lightningcss: true
+  protobufjs: true
+minimumReleaseAgeExclude:
+  - '@tanstack/ai-client@0.38.0'
+  - '@tanstack/ai-gemini@0.36.0'
+  - '@tanstack/ai-react@0.30.0'
+  - '@tanstack/ai@0.65.1'
