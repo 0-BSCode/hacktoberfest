@@ -56,6 +56,60 @@ The build output is a self-contained Node server. To deploy, push the `dist/` di
 For host-specific presets (Vercel, Netlify, Cloudflare, AWS Lambda, etc.) and tuning, see https://v3.nitro.build/deploy.
 
 
+# Todo workspace
+
+Open `/todos` or use the Todos navigation link. Enter one task in the New task
+field and click Add or press Enter. Manual entry works without AI access. Check
+or uncheck tasks directly in the list.
+
+For a longer dump, enter a message in the side chat and select Extract tasks.
+The app extracts new task titles and adds them automatically. Each message is
+independent. Empty results change nothing; failed messages have a Retry button.
+Manual entry stays available while extraction is running or unavailable.
+
+Tasks and completion states are saved in this browser under
+`hacktoberfest.todos.v1`. Chat messages last only for the page session. There are
+no accounts, device sync, or live synchronization between tabs. Storage failures
+show a warning and leave the current list usable. Chat commands to edit, complete,
+or delete existing tasks are deferred to a later change.
+
+## Extraction setup and API
+
+Set `OPENAI_API_KEY` in `.env.local` for local development, or in the server
+environment when deployed. Restart the server after changing it. The key stays
+on the server; do not use a `VITE_` prefix. Extraction uses the existing TanStack
+AI OpenAI adapter with `gpt-4o`.
+
+`POST /api/tasks/extract` accepts JSON:
+
+```json
+{ "message": "Buy milk, submit the presentation, and call Mum" }
+```
+
+A successful response is a complete, validated batch:
+
+```json
+{ "tasks": ["Buy milk", "Submit the presentation", "Call Mum"] }
+```
+
+Messages can contain 1 to 10,000 characters. Results can contain up to 50 titles,
+each trimmed and between 1 and 500 characters. Messages without new tasks return
+`{ "tasks": [] }`. Only the current message goes to the model; existing tasks and
+the chat transcript are not sent.
+
+Errors return `{ "error": "..." }`: HTTP 400 for invalid input, 503 for missing
+server configuration, and 502 for provider or output-validation failure. The
+browser adds no tasks from failed or invalid responses.
+
+Run the dependency-free schema and controlled endpoint checks with Node 24:
+
+```bash
+node --experimental-test-module-mocks src/lib/todo.test.ts
+```
+
+Verification uses controlled model responses. A live OpenAI request has not been
+verified because this workspace has no configured `OPENAI_API_KEY`.
+
 # TanStack Chat Application
 
 Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
