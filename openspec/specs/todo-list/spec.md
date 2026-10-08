@@ -1,10 +1,10 @@
-# Spec Delta
+# todo-list Specification
 
 ## Purpose
 
-Provide a simple todo list that users can populate manually or from free-form messages, mark complete directly, and retain in the same browser across page reloads.
+Provide a simple todo list that users can populate manually or from free-form messages, mark complete or delete after confirmation directly, and retain in the same browser across page reloads.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Accessible todo workspace
 
@@ -83,6 +83,37 @@ The system SHALL allow users to mark each todo complete or incomplete directly i
 - **THEN** that todo becomes complete and then incomplete
 - **AND** no extraction request is sent for either action
 
+### Requirement: Confirmed direct deletion
+
+Each todo SHALL have a trash-icon button with red danger styling on the right side of its row, with an accessible name identifying the deletion action and task, visible keyboard focus, and keyboard support. Activating it SHALL open a confirmation dialog matching the page theme and naming the selected task before changing the list. The dialog SHALL offer Cancel and Delete task actions, initially focus Cancel, and support Escape dismissal. Only confirmation SHALL remove the selected task by its identity, preserving all other tasks, their order, and completion states. Canceling or dismissing confirmation SHALL leave the list and saved data unchanged. Deletion SHALL make no AI request and SHALL remain available while extraction is pending or unavailable.
+
+#### Scenario: Confirm deletion of one task
+
+- **GIVEN** the list contains two tasks with the same title and another completed task
+- **WHEN** the user activates the right-side Delete button for one task and confirms
+- **THEN** only the selected task identity is removed
+- **AND** the other tasks retain their identities, order, and completion states
+- **AND** the deleted task remains absent after reload when browser storage is available
+- **AND** no extraction request is sent
+
+#### Scenario: Cancel deletion
+
+- **WHEN** the user activates Delete and cancels or dismisses the confirmation
+- **THEN** no task is removed and saved data remains unchanged
+
+#### Scenario: Delete during extraction
+
+- **GIVEN** an extraction request is pending
+- **WHEN** the user confirms deletion of an existing task
+- **THEN** that task is removed immediately
+- **AND** the later extraction appends its returned tasks to the current list without restoring the deleted task
+
+#### Scenario: Keyboard deletion on a narrow screen
+
+- **WHEN** the user focuses a task's Delete button using the keyboard on a narrow screen
+- **THEN** the user can activate it and confirm or cancel deletion
+- **AND** the row remains usable without page-level horizontal overflow
+
 ### Requirement: Browser persistence
 
 The system SHALL retain todo titles, identities, order, and completion states across reloads in the same browser when browser storage is available. Chat messages SHALL reset on reload. Cross-browser and cross-device synchronization SHALL NOT be provided.
@@ -106,6 +137,6 @@ The system SHALL remain usable when stored data cannot be read or saved. It SHAL
 
 #### Scenario: Saving is unavailable
 
-- **WHEN** a browser storage write fails after adding or toggling a todo
+- **WHEN** a browser storage write fails after adding, toggling, or confirming deletion of a todo
 - **THEN** the current list and change remain visible for the page session
 - **AND** the page warns that the change could not be saved across reloads

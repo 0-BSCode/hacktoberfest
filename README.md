@@ -62,6 +62,11 @@ Open `/todos` or use the Todos navigation link. Enter one task in the New task
 field and click Add or press Enter. Manual entry works without AI access. Check
 or uncheck tasks directly in the list.
 
+Select the red trash icon on the right of a task to remove it. A themed confirmation dialog
+names the task; Cancel or Escape keeps it. Confirmed deletions are saved in this browser and
+work while chat is processing or unavailable. Chat deletion commands remain
+deferred.
+
 For a longer dump, enter a message in the side chat and select Extract tasks.
 The app extracts new task titles and adds them automatically. Each message is
 independent. Empty results change nothing; failed messages have a Retry button.

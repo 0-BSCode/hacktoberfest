@@ -14,6 +14,7 @@ This design is needed because the change crosses the UI, server request boundary
 
 - Keep model extraction separate from client-owned todo state, with a small validated JSON contract.
 - Let users add tasks directly without depending on model access or chat progress.
+- Let users delete an individual task directly after confirming their choice.
 - Retain tasks across reloads without introducing a database or new dependency.
 - Keep failures recoverable and prevent initialization or retries from losing tasks.
 
@@ -49,6 +50,8 @@ For a successful result, validate the response in the browser and append all ret
 
 Both manual entry and extraction append to the same current todo state and use the same storage behavior. Use functional updates for both so a delayed extraction response cannot replace tasks added manually while it was pending. Reuse the task-title schema and straightforward append logic; a separate store or service for manual tasks is unnecessary.
 
+Place a native button showing the existing Lucide `Trash2` icon on the right of each task row, outside the checkbox label. Use red danger styling for its icon, border, and tinted background, with a red hover state and visible focus outline. Hide the decorative icon from assistive technology and give the button a task-specific deletion label and tooltip. Keep a minimum 44-pixel target and support keyboard activation on wide and narrow screens. On activation, open a styled HTML `dialog` using the page's theme colors and buttons, with the selected task's title, Cancel, and Delete task actions. Use `showModal()` for focus containment and an inert background. Focus Cancel initially; Cancel and Escape dismiss without changing the list and return focus to the invoking button. Only confirmation marks the list as changed and removes the selected ID in a functional state update. Preserve all other task identities, order, and completion states, including tasks with the same title. Reuse the existing storage effect to save the updated list, retaining its warning behavior if saving fails. Deletion makes no AI request and remains available while chat is pending or unavailable. A delayed extraction appends to the latest state without restoring a deleted task.
+
 For a nonempty batch, show an acknowledgement listing the added tasks. For an empty batch, show a reply such as "No new tasks found. This chat extracts new tasks; use the list checkboxes to mark existing tasks complete." This explains unsupported mutation requests without adding another model-generated response field.
 
 Use one submission handler for form and keyboard submission, with an immediate in-flight guard as well as disabled controls. Reset pending state after success or failure. On failure, keep the message visible and available for explicit retry. Do not automatically retry, append on partial responses, or claim success before validation. A failed transport request cannot mutate server-side tasks because the server only extracts; client additions happen only after a complete successful response. Ignore results after the page has unmounted.
@@ -57,7 +60,7 @@ Alternative considered: a global TanStack Store or persistence service. This fea
 
 ### Persist only todos in browser storage
 
-Use a dedicated key such as `hacktoberfest.todos.v1` containing the array of `{ id, title, completed }` entries. Validate stored data before restoring it. Load browser storage after mounting so server rendering never reads `window` and the initial empty state cannot overwrite a saved list. Do not write during restoration; save the resulting list only after explicit task additions or completion changes.
+Use a dedicated key such as `hacktoberfest.todos.v1` containing the array of `{ id, title, completed }` entries. Validate stored data before restoring it. Load browser storage after mounting so server rendering never reads `window` and the initial empty state cannot overwrite a saved list. Do not write during restoration; save the resulting list only after explicit task additions, completion changes, or confirmed deletions.
 
 Catch storage reads, JSON parsing, validation, and writes. If restoration fails, show a warning and keep an empty usable list without changing the unreadable stored value. If saving fails, retain the current in-memory todos and show that persistence is unavailable. Keep the transcript in memory only. Multiple open tabs can overwrite each other's saves; live tab synchronization is outside this release.
 
@@ -70,6 +73,8 @@ Leave one small runnable assertion check using the available Node runtime and bu
 Verify the UI with valid and failed responses: manual addition through Add and Enter, blank and oversized manual titles, manual addition without AI access and during a pending extraction, automatic append, empty results, repeated chat submit while pending, explicit retry, direct completion, reload restoration, unreadable data, failed storage writes, and narrow-screen keyboard use. Check that modification-only messages do not alter existing todos. Run the existing build and focused formatting/lint checks for touched files; document any unrelated baseline failures instead of expanding this change to fix them.
 
 ## Risks / Trade-offs
+
+- Direct deletion removes a browser-local task without an undo feature. Require confirmation naming the selected task before changing the list; canceling preserves it.
 
 - Extraction can be semantically wrong despite valid structure. Keep titles visible, constrain the prompt to stated tasks, and do not execute tools or alter existing todos.
 - OpenAI access and the demo's model may be unavailable in the implementation environment. Handle configuration/provider errors and verify one real extraction when access exists; a provider switch would be a focused follow-up decision.

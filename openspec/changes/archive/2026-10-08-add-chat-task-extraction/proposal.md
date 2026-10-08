@@ -10,15 +10,16 @@ Users need a simple todo list with both direct task entry and a way to turn a me
 - Add a task-title field and Add button in the list so users can enter tasks directly without AI, including when chat is processing or unavailable.
 - Extract task titles from each submitted message and automatically append them as incomplete todos after a successful, validated response.
 - Allow users to check and uncheck todos directly in the list.
+- Add a trash-icon button with red danger styling on the right of each todo. Ask for confirmation in a themed dialog before removing the selected task and saving the updated list.
 - Save todos and completion state in this browser so they survive reloads; keep the chat transcript only for the current page session.
 - Show extraction progress, an explicit no-tasks-found response, and recoverable errors without losing the message or existing tasks.
-- Keep this release focused on extraction and addition. Note chat commands to edit, complete, or remove existing tasks as future work. Dates, priorities, accounts, cross-device sync, and background agents are outside this change.
+- Keep chat focused on extraction and addition, with direct completion and confirmed deletion in the list. Note chat commands to edit, complete, or remove existing tasks as future work. Dates, priorities, accounts, cross-device sync, and background agents are outside this change.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `todo-list`: A responsive todo page with manual task entry, locally stored task titles, and directly controlled completion state.
+- `todo-list`: A responsive todo page with manual task entry, locally stored task titles, directly controlled completion state, and confirmed task deletion.
 - `task-extraction`: Convert an individual free-form message into validated task titles, append them automatically, and report success, empty results, or failure through the chat panel.
 
 ### Modified Capabilities

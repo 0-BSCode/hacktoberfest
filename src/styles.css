@@ -319,6 +319,20 @@ pre code {
   color: #9f3030;
 }
 
+.todo-delete-button {
+  padding: 0.65rem;
+  color: #e45d5d;
+}
+
+.todo-delete-button:hover {
+  background: rgba(196, 71, 71, 0.2);
+}
+
+.todo-delete-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 .demo-list-item {
   border: 1px solid var(--line);
   border-radius: 0.9rem;
@@ -461,4 +475,3 @@ a {
     transform: translateY(0);
   }
 }
-

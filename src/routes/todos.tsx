@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
 	ExtractionRequestSchema,
@@ -29,6 +30,8 @@ function TodoPage() {
 	const [ready, setReady] = useState(false);
 	const [pending, setPending] = useState(false);
 	const [storageWarning, setStorageWarning] = useState("");
+	const [deletingTodo, setDeletingTodo] = useState<Todo | null>(null);
+	const deleteDialog = useRef<HTMLDialogElement>(null);
 	const changed = useRef(false);
 	const active = useRef(false);
 	const inFlight = useRef<AbortController | null>(null);
@@ -79,6 +82,11 @@ function TodoPage() {
 		changed.current = true;
 		setTodos((current) => [...current, ...added]);
 	}
+
+	useEffect(() => {
+		if (deletingTodo) deleteDialog.current?.showModal();
+		else deleteDialog.current?.close();
+	}, [deletingTodo]);
 
 	async function extract(message: string, retryId?: string) {
 		const parsed = ExtractionRequestSchema.safeParse({ message });
@@ -226,8 +234,11 @@ function TodoPage() {
 					{todos.length ? (
 						<ul className="mt-6 space-y-3" aria-label="Todo list">
 							{todos.map((todo) => (
-								<li key={todo.id} className="demo-list-item">
-									<label className="flex cursor-pointer items-start gap-3">
+								<li
+									key={todo.id}
+									className="demo-list-item flex items-start gap-3"
+								>
+									<label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
 										<input
 											type="checkbox"
 											checked={todo.completed}
@@ -249,6 +260,15 @@ function TodoPage() {
 											{todo.title}
 										</span>
 									</label>
+									<button
+										type="button"
+										className="demo-button demo-button-danger todo-delete-button min-h-11 min-w-11 shrink-0"
+										aria-label={`Delete task: ${todo.title}`}
+										title={`Delete task: ${todo.title}`}
+										onClick={() => setDeletingTodo(todo)}
+									>
+										<Trash2 size={18} aria-hidden="true" />
+									</button>
 								</li>
 							))}
 						</ul>
@@ -372,6 +392,45 @@ function TodoPage() {
 					</p>
 				</section>
 			</div>
+			<dialog
+				ref={deleteDialog}
+				aria-labelledby="delete-task-heading"
+				aria-describedby="delete-task-description"
+				className="demo-panel m-auto w-[calc(100%-2rem)] max-w-md text-[var(--sea-ink)] backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+				onCancel={() => setDeletingTodo(null)}
+				onClose={() => setDeletingTodo(null)}
+			>
+				<h2 id="delete-task-heading" className="text-xl font-bold">
+					Delete this task?
+				</h2>
+				<p id="delete-task-description" className="demo-muted mt-3 break-words">
+					"{deletingTodo?.title}" will be removed from your list. This can't be
+					undone.
+				</p>
+				<div className="mt-6 flex justify-end gap-3">
+					<button
+						type="button"
+						className="demo-button demo-button-secondary"
+						onClick={() => setDeletingTodo(null)}
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						className="demo-button"
+						onClick={() => {
+							if (!deletingTodo) return;
+							changed.current = true;
+							setTodos((current) =>
+								current.filter((entry) => entry.id !== deletingTodo.id),
+							);
+							setDeletingTodo(null);
+						}}
+					>
+						Delete task
+					</button>
+				</div>
+			</dialog>
 		</main>
 	);
 }
