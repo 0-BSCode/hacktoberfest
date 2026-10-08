@@ -1,5 +1,5 @@
 import { chat } from "@tanstack/ai";
-import { openaiText } from "@tanstack/ai-openai";
+import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { createFileRoute } from "@tanstack/react-router";
 import { ExtractionRequestSchema, ExtractionResultSchema } from "#/lib/todo.ts";
 
@@ -26,7 +26,8 @@ export const Route = createFileRoute("/api/tasks/extract")({
 						{ status: 400 },
 					);
 				}
-				if (!process.env.OPENAI_API_KEY?.trim()) {
+				const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+				if (!apiKey) {
 					return Response.json(
 						{
 							error:
@@ -40,8 +41,16 @@ export const Route = createFileRoute("/api/tasks/extract")({
 				request.signal.addEventListener("abort", abort, { once: true });
 				if (request.signal.aborted) abort();
 				try {
+					const model = (process.env.OPENROUTER_MODEL?.trim() ||
+						"qwen/qwen3-30b-a3b-instruct-2507") as Parameters<
+						typeof createOpenRouterText
+					>[0];
 					const result = await chat({
-						adapter: openaiText("gpt-4o"),
+						adapter: createOpenRouterText(model, apiKey),
+						modelOptions: {
+							provider: { requireParameters: true },
+							streamOptions: { includeUsage: false },
+						},
 						systemPrompts: [SYSTEM_PROMPT],
 						messages: [{ role: "user", content: input.data.message }],
 						outputSchema: ExtractionResultSchema,

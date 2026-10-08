@@ -29,6 +29,9 @@ importers:
       '@tanstack/ai-openai':
         specifier: 0.27.0
         version: 0.27.0(@tanstack/ai@0.65.1(zod@4.6.5))(ws@8.22.0)(zod@4.6.5)
+      '@tanstack/ai-openrouter':
+        specifier: 0.21.1
+        version: 0.21.1(@tanstack/ai@0.65.1(zod@4.6.5))
       '@tanstack/ai-react':
         specifier: 0.30.0
         version: 0.30.0(@tanstack/ai@0.65.1(zod@4.6.5))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(zod@4.6.5)
@@ -321,6 +324,9 @@ packages:
   '@oozcitak/util@10.0.0':
     resolution: {integrity: sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA==}
     engines: {node: '>=20.0'}
+
+  '@openrouter/sdk@0.13.20':
+    resolution: {integrity: sha512-fx4o19FHgadEldfrSOgSbXAi32hCE3O708q1nxcoxYrW6fP6/WggX3o5PmnlnObzmxrqLMkZpqg188K+Twguhg==}
 
   '@oxc-parser/binding-android-arm-eabi@0.120.0':
     resolution: {integrity: sha512-WU3qtINx802wOl8RxAF1v0VvmC2O4D9M8Sv486nLeQ7iPHVmncYZrtBhB4SYyX+XZxj2PNnCcN+PW21jHgiOxg==}
@@ -745,6 +751,11 @@ packages:
     resolution: {integrity: sha512-LNNdld4q8ztpbuWWLznlErF7KX5HBZhDfC3UlzDIsMVMA56RRJZiW2i8RSH0weoIajoAeAWUjQLAo3c6RsC9EQ==}
     peerDependencies:
       '@tanstack/ai': ^0.65.0
+
+  '@tanstack/ai-openrouter@0.21.1':
+    resolution: {integrity: sha512-/+II/Q5/YlMqRcZ5J5F9fhy4n3fSS0R7CFEgzA8SnEdW6YRtDifo/G0n+OWXFBHyPOYrrU62Jka+YRhE6AUqlQ==}
+    peerDependencies:
+      '@tanstack/ai': ^0.65.1
 
   '@tanstack/ai-react@0.30.0':
     resolution: {integrity: sha512-V1ZB5Kxo9dzUM7Fi3a3pLd/nEWCpMnYoKjKrbe0he+RkIdDMYsR0GyqW2fzO0bsvir/ZWdRBYkXMQPR2GOwSBQ==}
@@ -2557,6 +2568,10 @@ snapshots:
 
   '@oozcitak/util@10.0.0': {}
 
+  '@openrouter/sdk@0.13.20':
+    dependencies:
+      zod: 4.6.5
+
   '@oxc-parser/binding-android-arm-eabi@0.120.0':
     optional: true
 
@@ -2855,6 +2870,12 @@ snapshots:
       - '@smithy/signature-v4'
       - ws
       - zod
+
+  '@tanstack/ai-openrouter@0.21.1(@tanstack/ai@0.65.1(zod@4.6.5))':
+    dependencies:
+      '@openrouter/sdk': 0.13.20
+      '@tanstack/ai': 0.65.1(zod@4.6.5)
+      '@tanstack/ai-utils': 0.4.1
 
   '@tanstack/ai-react@0.30.0(@tanstack/ai@0.65.1(zod@4.6.5))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(zod@4.6.5)':
     dependencies:

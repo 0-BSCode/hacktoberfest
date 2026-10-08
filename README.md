@@ -75,10 +75,28 @@ or delete existing tasks are deferred to a later change.
 
 ## Extraction setup and API
 
-Set `OPENAI_API_KEY` in `.env.local` for local development, or in the server
-environment when deployed. Restart the server after changing it. The key stays
-on the server; do not use a `VITE_` prefix. Extraction uses the existing TanStack
-AI OpenAI adapter with `gpt-4o`.
+Set `OPENROUTER_API_KEY` in `.env.local` for local development, or in the server
+environment when deployed. Restart the server after changing configuration. The
+key stays on the server; do not use a `VITE_` prefix. Todo extraction uses the
+TanStack AI OpenRouter adapter and defaults to the open-weight
+`qwen/qwen3-30b-a3b-instruct-2507` model.
+
+```env
+OPENROUTER_API_KEY=your_openrouter_api_key
+# Optional; unset or whitespace-only uses the Qwen default above.
+OPENROUTER_MODEL=qwen/qwen3-30b-a3b-instruct-2507
+```
+
+To switch models, set `OPENROUTER_MODEL` to an open-weight model ID with
+structured-output support on OpenRouter. The server trims the setting; the
+browser cannot select a model. Requests require schema-capable provider
+endpoints and do not automatically fall back to another model or plain text.
+Unsupported models or unavailable compatible providers produce a safe error.
+Optional streamed usage reporting is disabled to keep it from restricting
+provider routing. The browser still receives one complete JSON response.
+
+`OPENAI_API_KEY` alone no longer enables todo extraction. Existing demo routes
+continue using their own provider credentials, including `OPENAI_API_KEY`.
 
 `POST /api/tasks/extract` accepts JSON:
 
@@ -101,14 +119,17 @@ Errors return `{ "error": "..." }`: HTTP 400 for invalid input, 503 for missing
 server configuration, and 502 for provider or output-validation failure. The
 browser adds no tasks from failed or invalid responses.
 
-Run the dependency-free schema and controlled endpoint checks with Node 24:
+Run the assertion-based schema, endpoint, and adapter transport checks with Node 24:
 
 ```bash
 node --experimental-test-module-mocks src/lib/todo.test.ts
 ```
 
-Verification uses controlled model responses. A live OpenAI request has not been
-verified because this workspace has no configured `OPENAI_API_KEY`.
+These checks use controlled responses and intercept provider requests, so they
+require no credentials or external network access. They verify routing, schema
+serialization, model configuration, and safe failures, but do not establish
+live model accuracy. Live Qwen extraction has not been verified in this workspace
+because no `OPENROUTER_API_KEY` is configured.
 
 # TanStack Chat Application
 

@@ -1,5 +1,6 @@
 allowBuilds:
   '@google/genai': true
+  '@openrouter/sdk': false
   esbuild: true
   lightningcss: true
   protobufjs: true
@@ -8,3 +9,4 @@ minimumReleaseAgeExclude:
   - '@tanstack/ai-gemini@0.36.0'
   - '@tanstack/ai-react@0.30.0'
   - '@tanstack/ai@0.65.1'
+  - '@tanstack/ai-openrouter@0.21.1'
