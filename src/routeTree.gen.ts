@@ -16,6 +16,7 @@ import { Route as DemoAiChatRouteImport } from './routes/demo/ai-chat'
 import { Route as DemoAiImageRouteImport } from './routes/demo/ai-image'
 import { Route as DemoAiStructuredRouteImport } from './routes/demo/ai-structured'
 import { Route as DemoStoreRouteImport } from './routes/demo/store'
+import { Route as ApiAudioTranscribeRouteImport } from './routes/api.audio.transcribe'
 import { Route as ApiTasksExtractRouteImport } from './routes/api.tasks.extract'
 import { Route as DemoGuitarsIndexRouteImport } from './routes/demo/guitars/index'
 import { Route as DemoGuitarsGuitarIdRouteImport } from './routes/demo/guitars/$guitarId'
@@ -58,6 +59,11 @@ const DemoAiStructuredRoute = DemoAiStructuredRouteImport.update({
 const DemoStoreRoute = DemoStoreRouteImport.update({
   id: '/demo/store',
   path: '/demo/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAudioTranscribeRoute = ApiAudioTranscribeRouteImport.update({
+  id: '/api/audio/transcribe',
+  path: '/api/audio/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTasksExtractRoute = ApiTasksExtractRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/demo/ai-image': typeof DemoAiImageRoute
   '/demo/ai-structured': typeof DemoAiStructuredRoute
   '/demo/store': typeof DemoStoreRoute
+  '/api/audio/transcribe': typeof ApiAudioTranscribeRoute
   '/api/tasks/extract': typeof ApiTasksExtractRoute
   '/demo/guitars/$guitarId': typeof DemoGuitarsGuitarIdRoute
   '/demo/guitars/': typeof DemoGuitarsIndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/demo/ai-image': typeof DemoAiImageRoute
   '/demo/ai-structured': typeof DemoAiStructuredRoute
   '/demo/store': typeof DemoStoreRoute
+  '/api/audio/transcribe': typeof ApiAudioTranscribeRoute
   '/api/tasks/extract': typeof ApiTasksExtractRoute
   '/demo/guitars/$guitarId': typeof DemoGuitarsGuitarIdRoute
   '/demo/guitars': typeof DemoGuitarsIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/demo/ai-image': typeof DemoAiImageRoute
   '/demo/ai-structured': typeof DemoAiStructuredRoute
   '/demo/store': typeof DemoStoreRoute
+  '/api/audio/transcribe': typeof ApiAudioTranscribeRoute
   '/api/tasks/extract': typeof ApiTasksExtractRoute
   '/demo/guitars/$guitarId': typeof DemoGuitarsGuitarIdRoute
   '/demo/guitars/': typeof DemoGuitarsIndexRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/demo/ai-image'
     | '/demo/ai-structured'
     | '/demo/store'
+    | '/api/audio/transcribe'
     | '/api/tasks/extract'
     | '/demo/guitars/$guitarId'
     | '/demo/guitars/'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/demo/ai-image'
     | '/demo/ai-structured'
     | '/demo/store'
+    | '/api/audio/transcribe'
     | '/api/tasks/extract'
     | '/demo/guitars/$guitarId'
     | '/demo/guitars'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/demo/ai-image'
     | '/demo/ai-structured'
     | '/demo/store'
+    | '/api/audio/transcribe'
     | '/api/tasks/extract'
     | '/demo/guitars/$guitarId'
     | '/demo/guitars/'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   DemoAiImageRoute: typeof DemoAiImageRoute
   DemoAiStructuredRoute: typeof DemoAiStructuredRoute
   DemoStoreRoute: typeof DemoStoreRoute
+  ApiAudioTranscribeRoute: typeof ApiAudioTranscribeRoute
   ApiTasksExtractRoute: typeof ApiTasksExtractRoute
   DemoGuitarsGuitarIdRoute: typeof DemoGuitarsGuitarIdRoute
   DemoGuitarsIndexRoute: typeof DemoGuitarsIndexRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/store'
       fullPath: '/demo/store'
       preLoaderRoute: typeof DemoStoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/audio/transcribe': {
+      id: '/api/audio/transcribe'
+      path: '/api/audio/transcribe'
+      fullPath: '/api/audio/transcribe'
+      preLoaderRoute: typeof ApiAudioTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tasks/extract': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoAiImageRoute: DemoAiImageRoute,
   DemoAiStructuredRoute: DemoAiStructuredRoute,
   DemoStoreRoute: DemoStoreRoute,
+  ApiAudioTranscribeRoute: ApiAudioTranscribeRoute,
   ApiTasksExtractRoute: ApiTasksExtractRoute,
   DemoGuitarsGuitarIdRoute: DemoGuitarsGuitarIdRoute,
   DemoGuitarsIndexRoute: DemoGuitarsIndexRoute,

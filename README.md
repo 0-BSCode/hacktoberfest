@@ -133,10 +133,88 @@ node --experimental-test-module-mocks src/lib/todo.test.ts
 These checks use controlled responses and intercept provider requests, so they
 require no credentials or external network access. They verify routing, schema
 serialization, model configuration, and safe failures, but do not establish
-live model accuracy. Live Qwen extraction has not been verified in this workspace
-because no `OPENROUTER_API_KEY` is configured.
+live model accuracy. Live Qwen extraction has not been verified in this workspace.
 
 # TanStack Chat Application
+
+## Voice dictation setup and API
+
+Brain dump dictation uses the same server-only `OPENROUTER_API_KEY` as task
+extraction. Its separate optional setting is
+`OPENROUTER_TRANSCRIPTION_MODEL=openai/whisper-large-v3-turbo`. Unset or blank
+uses this open-weight Whisper default. Overrides must be supported open-weight
+transcription models on OpenRouter that accept the recording format. Restart
+the server after configuration changes. Demo chat retains its separate
+`OPENAI_API_KEY` and `/demo/api/ai/transcription` endpoint.
+
+`POST /api/audio/transcribe` accepts multipart form data containing exactly one
+nonempty `audio` file. It supports declared WebM, Ogg, MP4/M4A, and WAV audio
+types, limits files to 10 MiB and the entire request to 11 MiB, and returns
+`{ "text": "transcribed words" }`. Language is detected automatically. The
+browser cannot choose the model; task extraction's `OPENROUTER_MODEL` setting
+is independent. Audio is sent to OpenRouter and its transcription provider,
+and is not saved by this application. Transcription does not create tasks.
+
+Errors return `{ "error": "..." }`: 400 for malformed or unsupported audio,
+413 for oversized uploads, 503 for missing configuration, and 502 for provider,
+invalid-output, or 60-second timeout failures. Cancellation aborts the upstream
+request, but cannot undo processing or billing that already occurred.
+
+Run the controlled endpoint checks with Node 24:
+
+```bash
+node --experimental-test-module-mocks src/lib/voice-dictation.test.ts
+```
+
+These checks verify upload boundaries, model configuration, request encoding,
+transcript validation, safe errors, cancellation, and timeout with intercepted
+provider calls. They require no credentials and do not establish live model
+accuracy.
+
+In Brain dump, select Record, grant microphone permission, speak, and select
+Stop. Review or edit the inserted text, then select Extract tasks (or press
+Enter) to create tasks. Dictation appends to the latest draft with a separating
+space when needed and never submits it automatically. A combined draft over
+10,000 characters is rejected without changing existing text. Cancel dictation
+discards audio or a pending transcript; typing and manual task entry remain
+available during dictation. Extraction and dictation cannot run together.
+Record, Stop, and Cancel are keyboard-accessible buttons; progress uses a polite
+status announcement and errors are announced as alerts.
+
+Recording requires microphone permission, HTTPS or localhost, and a browser
+with MediaRecorder support for WebM/Opus, Ogg/Opus, or MP4/AAC. The recorder
+selects a supported format automatically; unsupported environments retain
+typed input. Recordings stop after two minutes. Cancel discards recording or
+pending transcription, and leaving the page stops microphone tracks and
+ignores late results. Failed or empty recordings can be retried by recording
+again or by typing instead; existing text is preserved.
+
+Controlled browser recorder checks passed for format selection, permission
+denial, constructor/start failures, duplicate controls, late permission
+cancellation, cancelled uploads, size overflow, failed/empty transcripts,
+automatic Stop with MP4, and microphone/upload cleanup on unmount. These used
+simulated browser audio and intercepted responses, not a physical microphone.
+The running demo passed manual/automatic insertion, upload-error feedback, and
+microphone cleanup checks. The running todo composer passed empty/existing
+and edited-during-upload drafts, whitespace, empty speech, exact 10,000-character
+and overflow boundaries, cancelled late results, Enter/Retry exclusion through
+all dictation phases, manual entry, explicit extraction, saved-task restoration,
+and keyboard activation. Live OpenRouter smoke checks passed on 2026-10-08 with the default
+`openai/whisper-large-v3-turbo`: a generated 1.53-second WAV and AAC/M4A clip
+both transcribed to "Buy milk and call mom." The actual todo composer appended
+the live M4A result to an existing draft without creating a message or task.
+The M4A check used simulated microphone/MediaRecorder input with genuine audio
+bytes and a real provider response. Physical microphone capture, native browser
+WebM/Opus output, and Safari/Firefox recording compatibility remain unverified.
+
+Integration checks passed for the controlled transcription and existing todo
+endpoint scripts, the production build, route registration, saved todos across
+page reload, and server credential isolation in the client bundle. No runtime
+dependency was added. Biome passes the endpoint, recorder, todo page, and test
+file; demo chat retains four existing lint errors (scroll-effect dependencies,
+part index keys, and two button types). Full TypeScript checking retains six
+existing errors in store devtools and the image/chat/guitar demos. Both sets
+were reproduced against the unchanged HEAD; the dictation changes add none.
 
 Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
 

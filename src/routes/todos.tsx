@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useAudioRecorder } from "#/hooks/demo-useAudioRecorder";
 import {
 	ExtractionRequestSchema,
 	ExtractionResultSchema,
@@ -25,7 +26,11 @@ export const Route = createFileRoute("/todos")({
 function TodoPage() {
 	const [todos, setTodos] = useState<Todo[]>([]);
 	const [title, setTitle] = useState("");
-	const [input, setInput] = useState("");
+	const [{ input, dictationError }, setDraft] = useState({
+		input: "",
+		dictationError: "",
+	});
+	const setInput = (input: string) => setDraft({ input, dictationError: "" });
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [ready, setReady] = useState(false);
 	const [pending, setPending] = useState(false);
@@ -36,6 +41,24 @@ function TodoPage() {
 	const active = useRef(false);
 	const inFlight = useRef<AbortController | null>(null);
 	const chatBox = useRef<HTMLDivElement>(null);
+	const recorder = useAudioRecorder({
+		endpoint: "/api/audio/transcribe",
+		onTranscript: (text) =>
+			setDraft((current) => {
+				const combined =
+					current.input +
+					(current.input && !/\s$/.test(current.input) ? " " : "") +
+					text;
+				return combined.length > 10_000
+					? {
+							...current,
+							dictationError:
+								"The transcript would exceed 10,000 characters. Your draft was kept. Please shorten it and record again.",
+						}
+					: { input: combined, dictationError: "" };
+			}),
+	});
+	const dictationBusy = recorder.status !== "idle";
 
 	useEffect(() => {
 		active.current = true;
@@ -90,7 +113,8 @@ function TodoPage() {
 
 	async function extract(message: string, retryId?: string) {
 		const parsed = ExtractionRequestSchema.safeParse({ message });
-		if (!parsed.success || inFlight.current || !ready) return;
+		if (!parsed.success || inFlight.current || !ready || recorder.isBusy())
+			return;
 		const controller = new AbortController();
 		inFlight.current = controller;
 		setPending(true);
@@ -319,7 +343,7 @@ function TodoPage() {
 										<button
 											type="button"
 											className="demo-button demo-button-secondary mt-3"
-											disabled={pending}
+											disabled={pending || dictationBusy}
 											onClick={() =>
 												void extract(message.retryMessage ?? "", message.id)
 											}
@@ -379,10 +403,62 @@ function TodoPage() {
 								? "Keep the message to 10,000 characters or fewer."
 								: "Enter to send. Shift + Enter for a new line."}
 						</p>
+						<div className="my-3 flex flex-wrap gap-2">
+							<button
+								type="button"
+								className="demo-button demo-button-secondary"
+								disabled={
+									!ready || pending || (dictationBusy && !recorder.isRecording)
+								}
+								aria-label={
+									recorder.isRecording
+										? "Stop recording"
+										: "Record voice message"
+								}
+								aria-pressed={recorder.isRecording}
+								onClick={() => {
+									if (recorder.isRecording) recorder.stopRecording();
+									else if (ready && !inFlight.current) {
+										setDraft((current) => ({ ...current, dictationError: "" }));
+										void recorder.startRecording();
+									}
+								}}
+							>
+								{recorder.isRecording ? "Stop" : "Record"}
+							</button>
+							{dictationBusy && (
+								<button
+									type="button"
+									className="demo-button demo-button-secondary"
+									onClick={recorder.cancelRecording}
+								>
+									Cancel dictation
+								</button>
+							)}
+						</div>
+						<output className="demo-muted my-2 text-sm">
+							{recorder.status === "starting"
+								? "Waiting for microphone permission…"
+								: recorder.isRecording
+									? "Recording…"
+									: recorder.isTranscribing
+										? "Transcribing…"
+										: ""}{" "}
+							{!dictationError && recorder.notice}
+						</output>
+						{(dictationError || recorder.error) && (
+							<p role="alert" className="demo-alert my-2">
+								{dictationError || recorder.error}
+							</p>
+						)}
+						<p className="demo-muted mb-3 text-xs">
+							Audio is sent to OpenRouter for transcription. Review the text
+							before extracting tasks.
+						</p>
 						<button
 							type="submit"
 							className="demo-button"
-							disabled={!ready || pending || !chatValid}
+							disabled={!ready || pending || !chatValid || dictationBusy}
 						>
 							{pending ? "Extracting…" : "Extract tasks"}
 						</button>
