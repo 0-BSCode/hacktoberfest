@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/tasks/extract")({
 				if (request.signal.aborted) abort();
 				try {
 					const model = (process.env.OPENROUTER_MODEL?.trim() ||
-						"qwen/qwen3-30b-a3b-instruct-2507") as Parameters<
+						"google/gemma-4-26b-a4b-it") as Parameters<
 						typeof createOpenRouterText
 					>[0];
 					const result = await chat({
